@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>BaseLog – Wissensarchiv & QuickCapture</title>
+  <title>BaseLog – Digitales Wissens- & Erfahrungsarchiv</title>
 
   <!-- PWA & Mobile Capabilities -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="BaseLog">
+  <meta name="application-name" content="BaseLog">
   <meta name="format-detection" content="telephone=no">
   <meta name="theme-color" content="#0284c7">
 
@@ -63,12 +64,15 @@
   <header class="sticky top-0 z-30 backdrop-blur-md bg-white/85 dark:bg-slate-900/85 border-b border-slate-200 dark:border-slate-800 px-4 py-3">
     <div class="max-w-4xl mx-auto flex items-center justify-between">
       <div class="flex items-center space-x-2.5 cursor-pointer select-none" onclick="showSection('capture')">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-          🧠
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-600 to-slate-900 flex items-center justify-center text-white font-mono font-bold text-sm tracking-tight shadow-sm border border-sky-400/30">
+          BL
         </div>
         <div>
-          <h1 class="text-sm font-semibold leading-tight tracking-tight">Second Brain</h1>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Digitaler Zwilling & Wissensarchiv</p>
+          <h1 class="text-sm font-bold leading-tight tracking-tight flex items-center gap-1.5">
+            BaseLog
+            <span class="text-[10px] font-mono font-normal px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300">v2.1</span>
+          </h1>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">Digitales Wissens- & Erfahrungsarchiv</p>
         </div>
       </div>
 
@@ -100,8 +104,8 @@
       <div class="flex items-center space-x-3">
         <div id="syncIndicatorDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></div>
         <div>
-          <span class="font-medium text-slate-800 dark:text-slate-200" id="syncStatusTitle">Lokaler Browser-Speicher aktiv</span>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400" id="syncStatusSub">Einträge sind offline im Gerät gesichert.</p>
+          <span class="font-medium text-slate-800 dark:text-slate-200" id="syncStatusTitle">Lokaler BaseLog-Speicher aktiv</span>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400" id="syncStatusSub">Einträge sind offline im Browser gesichert.</p>
         </div>
       </div>
 
@@ -228,7 +232,7 @@
         <button type="button" onclick="toggleMarkdownPreview()" class="w-full px-4 py-3 text-xs font-semibold flex items-center justify-between text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/40">
           <span class="flex items-center space-x-2">
             <span>📄</span>
-            <span>Generiertes Markdown & YAML-Schema (Vorschau)</span>
+            <span>Generiertes BaseLog Markdown & YAML-Schema (Vorschau)</span>
           </span>
           <span id="previewChevron" class="text-slate-400 transform transition-transform duration-200">▼</span>
         </button>
@@ -243,8 +247,8 @@
     <div id="domainManagerSection" class="hidden space-y-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h2 class="text-base font-semibold">Lebensbereiche verwalten</h2>
-          <p class="text-xs text-slate-500">Definieren Sie eigene Kategorien für Ihre Erfahrungen (z. B. Weinbau, Finanzen, Erziehung)</p>
+          <h2 class="text-base font-semibold">BaseLog Lebensbereiche</h2>
+          <p class="text-xs text-slate-500">Definieren Sie eigene Kategorien für Ihre Erfahrungen (z. B. Weinbau, Finanzen, Führung)</p>
         </div>
         <button onclick="showSection('capture')" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-sky-600 text-white hover:bg-sky-500 transition">
           Fertig
@@ -282,7 +286,7 @@
     <div id="archiveSection" class="hidden space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h2 class="text-base font-semibold">Gespeichertes Wissensarchiv</h2>
+          <h2 class="text-base font-semibold">BaseLog Wissensarchiv</h2>
           <p class="text-xs text-slate-500">Dauerhaft und anbieterunabhängig im Browser-JSON gesichert</p>
         </div>
         <div class="flex items-center flex-wrap gap-2">
@@ -323,7 +327,7 @@
     <div id="tagManagerSection" class="hidden space-y-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h2 class="text-base font-semibold">Tag-Katalog & Taxonomie</h2>
+          <h2 class="text-base font-semibold">BaseLog Tag-Katalog & Taxonomie</h2>
           <p class="text-xs text-slate-500">Verwalten Sie Ihre Tags strukturiert nach Lebensbereichen</p>
         </div>
         <div class="flex items-center space-x-2">
@@ -370,9 +374,9 @@
         <span>.md Datei</span>
       </button>
 
-      <button type="button" onclick="saveToArchive()" class="flex-[1.5] py-2.5 px-4 text-xs font-semibold rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 active:scale-95 text-white shadow-md shadow-sky-600/20 transition flex items-center justify-center space-x-1.5">
+      <button type="button" onclick="saveToBaseLog()" class="flex-[1.5] py-2.5 px-4 text-xs font-semibold rounded-xl bg-gradient-to-r from-sky-600 to-slate-800 hover:from-sky-500 hover:to-slate-700 active:scale-95 text-white shadow-md shadow-sky-600/20 transition flex items-center justify-center space-x-1.5">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-        <span>Erkenntnis sichern</span>
+        <span>In BaseLog sichern</span>
       </button>
     </div>
   </footer>
@@ -383,16 +387,17 @@
     <span id="toastMessage">Meldung</span>
   </div>
 
+  <!-- JavaScript Application Logic -->
   <script>
-    // Standard Domains (Default setup)
+    // Standard Domains for BaseLog
     const DEFAULT_DOMAINS = {
       beruf: { id: 'beruf', name: 'Beruf & Fach', emoji: '💼', desc: 'Berufserfahrung, Methoden, Führung & Projekte', isSystem: true },
-      familie: { id: 'familie', name: 'Familie & Beziehung', emoji: '👨‍‍👩‍👦', desc: 'Werte, Erziehung, Partnerschaft & Momente', isSystem: true },
+      familie: { id: 'familie', name: 'Familie & Beziehung', emoji: '👨‍👩‍👦', desc: 'Werte, Erziehung, Partnerschaft & Momente', isSystem: true },
       freizeit: { id: 'freizeit', name: 'Freizeit & Sport', emoji: '🏃', desc: 'Hobbys, Gesundheit, Natur & Fitness', isSystem: true },
       mindset: { id: 'mindset', name: 'Mindset & Philosophie', emoji: '💡', desc: 'Reflexion, Lebensregeln & Denkmodelle', isSystem: true }
     };
 
-    // Default Seed Data for Tag Database
+    // Default Seed Data for BaseLog Tag Database
     const DEFAULT_TAG_DATABASE = {
       beruf: ['architektur', 'projektmanagement', 'leadership', 'verhandlung', 'entscheidungsmatrix', 'kommunikation', 'effizienz', 'risikomanagement', 'prozessoptimierung', 'hermes', 'agile', 'priorisierung'],
       familie: ['erziehung', 'beziehung', 'zeitmanagement', 'werte', 'kommunikation', 'rituale', 'gelassenheit', 'organisation', 'gespraechskultur'],
@@ -426,7 +431,7 @@
     });
 
     function loadSavedTheme() {
-      const saved = localStorage.getItem('sb_theme');
+      const saved = localStorage.getItem('baselog_theme');
       const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
       if (saved === 'dark' || (!saved && prefersDark)) {
         document.documentElement.classList.add('dark');
@@ -439,51 +444,49 @@
 
     function toggleDarkMode() {
       const isDark = document.documentElement.classList.toggle('dark');
-      localStorage.setItem('sb_theme', isDark ? 'dark' : 'light');
+      localStorage.setItem('baselog_theme', isDark ? 'dark' : 'light');
       document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
     }
 
     function initSyncSettings() {
-      // Check if browser supports File System Access API
       const hasFSA = 'showDirectoryPicker' in window;
       const btn = document.getElementById('dirPickerBtn');
       if (!hasFSA && btn) {
-        btn.title = "File System Access API auf diesem Browser/Gerät nicht verfügbar (z.B. iOS). Nutzen Sie 'Mobil teilen'.";
+        btn.title = "File System Access API auf diesem Browser/Gerät nicht verfügbar (z.B. iOS Safari). Nutzen Sie 'Mobil teilen'.";
       }
 
-      // Restore mobile share preference
-      const mobileShareSaved = localStorage.getItem('sb_mobile_share') === 'true';
+      const mobileShareSaved = localStorage.getItem('baselog_mobile_share') === 'true';
       const chk = document.getElementById('mobileShareCheck');
       if (chk) {
         chk.checked = mobileShareSaved;
         chk.addEventListener('change', () => {
-          localStorage.setItem('sb_mobile_share', chk.checked);
+          localStorage.setItem('baselog_mobile_share', chk.checked);
         });
       }
     }
 
     async function connectLocalDirectory() {
       if (!('showDirectoryPicker' in window)) {
-        showToast('Direkter Ordnerzugriff wird nur auf Desktop (Chrome/Edge) unterstützt.', 'ℹ️');
+        showToast('Direkter Ordnerzugriff wird nur auf Desktop (Chrome/Edge/Brave) unterstützt.', 'ℹ️');
         return;
       }
 
       try {
         localDirectoryHandle = await window.showDirectoryPicker({
-          id: 'proton_drive_second_brain',
+          id: 'proton_drive_baselog',
           mode: 'readwrite'
         });
 
-        const dirName = localDirectoryHandle.name || 'Ausgewählter Ordner';
+        const dirName = localDirectoryHandle.name || 'BaseLog';
         document.getElementById('folderLabel').textContent = `Sync: ${dirName}`;
         document.getElementById('folderIcon').textContent = '🟢';
         document.getElementById('syncStatusTitle').textContent = `Proton Drive Sync aktiv: /${dirName}`;
         document.getElementById('syncStatusSub').textContent = 'Neue Notizen werden automatisch physisch als .md abgelegt.';
-        showToast(`Ordner "${dirName}" erfolgreich verbunden!`, '📁');
+        showToast(`Ordner "${dirName}" erfolgreich mit BaseLog verbunden!`, '📁');
       } catch (err) {
         if (err.name !== 'AbortError') {
           console.error(err);
-          showToast('Ordnerauswahl fehlgeschlagen.', '⚠️');
+          showToast('Ordnerauswahl abgebrochen oder fehlgeschlagen.', '⚠️');
         }
       }
     }
@@ -492,7 +495,6 @@
       if (!localDirectoryHandle) return false;
 
       try {
-        // Query / verify write permission
         const options = { mode: 'readwrite' };
         if ((await localDirectoryHandle.queryPermission(options)) !== 'granted') {
           if ((await localDirectoryHandle.requestPermission(options)) !== 'granted') {
@@ -508,14 +510,14 @@
         await writable.close();
         return true;
       } catch (err) {
-        console.error('File System Access error:', err);
+        console.error('BaseLog File System Access error:', err);
         return false;
       }
     }
 
     function initDomainDatabase() {
       try {
-        const stored = localStorage.getItem('sb_domains_v2');
+        const stored = localStorage.getItem('baselog_domains_v2');
         if (stored) {
           domains = JSON.parse(stored);
         } else {
@@ -532,7 +534,7 @@
     }
 
     function persistDomains() {
-      localStorage.setItem('sb_domains_v2', JSON.stringify(domains));
+      localStorage.setItem('baselog_domains_v2', JSON.stringify(domains));
       populateArchiveFilters();
     }
 
@@ -581,7 +583,7 @@
       renderDomainSelectors();
       renderDomainListManager();
       populateArchiveFilters();
-      showToast(`Bereich "${name}" erfolgreich angelegt!`, '🎉');
+      showToast(`Bereich "${name}" in BaseLog angelegt!`, '🎉');
     }
 
     function deleteDomain(id) {
@@ -600,7 +602,7 @@
       renderDomainListManager();
       renderAvailableTags();
       populateArchiveFilters();
-      showToast('Lebensbereich entfernt.', '🗑️');
+      showToast('Lebensbereich entfernt.', '🗑️️');
     }
 
     function renderDomainSelectors() {
@@ -666,7 +668,7 @@
 
     function initTagDatabase() {
       try {
-        const stored = localStorage.getItem('sb_tag_database_v2');
+        const stored = localStorage.getItem('baselog_tag_database_v2');
         if (stored) {
           tagDatabase = JSON.parse(stored);
         } else {
@@ -684,7 +686,7 @@
     }
 
     function persistTagDatabase() {
-      localStorage.setItem('sb_tag_database_v2', JSON.stringify(tagDatabase));
+      localStorage.setItem('baselog_tag_database_v2', JSON.stringify(tagDatabase));
       populateArchiveFilters();
     }
 
@@ -738,7 +740,7 @@
       renderAvailableTags();
       renderSelectedTags();
       updatePreview();
-      showToast('Tag hinzugefügt & im Katalog gespeichert', '🏷️');
+      showToast('Tag hinzugefügt & im BaseLog Katalog gespeichert', '🏷️');
     }
 
     function handleTagKey(event) {
@@ -833,7 +835,7 @@
       const targetDomain = domainSelect.value;
 
       if (!raw) {
-        showToast('Bitte einen Tag-Namen eingeben', '⚠️️');
+        showToast('Bitte einen Tag-Namen eingeben', '⚠️');
         return;
       }
 
@@ -845,7 +847,7 @@
         input.value = '';
         renderCatalogGroups();
         renderAvailableTags();
-        showToast(`Tag #${clean} im Katalog hinterlegt!`, '✅');
+        showToast(`Tag #${clean} in BaseLog hinterlegt!`, '✅');
       } else {
         showToast(`Tag #${clean} existiert bereits in diesem Bereich.`, 'ℹ️');
       }
@@ -978,6 +980,7 @@
 
       const yamlHeader = [
         '---',
+        `system: "BaseLog"`,
         `id: "${id}"`,
         `title: "${title.replace(/"/g, '\\"')}"`,
         `date: "${isoDate}"`,
@@ -987,7 +990,7 @@
         `type: "daily-insight"`,
         `tags: [${tagsArray.map(t => `"${t}"`).join(', ')}]`,
         `ai_accessible: ${!isConfidential}`,
-        'version: "2.0"',
+        'version: "2.1"',
         '---'
       ].join('\n');
 
@@ -996,7 +999,7 @@
         '',
         `# ${title}`,
         '',
-        `*Erfasst am ${isoDate} um ${isoTime} Uhr • Lebensbereich: **${domainObj.emoji} ${domainObj.name}***`,
+        `*BaseLog Eintrag vom ${isoDate} um ${isoTime} Uhr • Lebensbereich: **${domainObj.emoji} ${domainObj.name}***`,
         '',
         content || '_Noch kein Freitext hinterlegt._'
       ].join('\n');
@@ -1064,7 +1067,7 @@
       dummy.select();
       try {
         document.execCommand('copy');
-        showToast('Markdown in die Zwischenablage kopiert!', '📋');
+        showToast('BaseLog Markdown in die Zwischenablage kopiert!', '📋');
       } catch (err) {
         showToast('Kopieren fehlgeschlagen.', '⚠️');
       }
@@ -1089,7 +1092,7 @@
       showToast(`${payload.filename} gespeichert!`, '💾');
     }
 
-    async function saveToArchive() {
+    async function saveToBaseLog() {
       const titleInput = document.getElementById('insightTitle');
       const textInput = document.getElementById('insightText');
 
@@ -1101,21 +1104,21 @@
       selectedTags.forEach(t => ensureTagInCatalog(t, currentDomain));
       const payload = generatePayload();
 
-      // 1. Save in Browser LocalStorage (Always guaranteed)
+      // 1. Save in Browser LocalStorage
       entries.unshift(payload);
       persistEntries();
 
-      let syncStatusMsg = 'Erkenntnis gesichert!';
+      let syncStatusMsg = 'In BaseLog gesichert!';
 
-      // 2. Desktop File System Access API (Proton Drive Sync Folder)
+      // 2. Desktop File System Access API (Proton Drive Folder Sync)
       if (localDirectoryHandle) {
         const wroteDesktop = await writeNoteToDesktopDirectory(payload);
         if (wroteDesktop) {
-          syncStatusMsg += ' In Proton Drive Ordner geschrieben 📁';
+          syncStatusMsg += ' In Proton Drive Ordner abgelegt 📁';
         }
       }
 
-      // 3. Mobile Web Share API (Pass directly to Proton Drive / Files App)
+      // 3. Mobile Web Share API (Pass directly to Proton Drive)
       const mobileShareActive = document.getElementById('mobileShareCheck')?.checked;
       if (mobileShareActive && navigator.share) {
         try {
@@ -1124,7 +1127,7 @@
             await navigator.share({
               files: [file],
               title: payload.title,
-              text: `Second Brain Notiz [${payload.domainName}]`
+              text: `BaseLog Eintrag [${payload.domainName}]`
             });
             syncStatusMsg += ' Mobil geteilt 📲';
           }
@@ -1135,7 +1138,7 @@
         }
       }
 
-      // Form reset
+      // Reset fields
       titleInput.value = '';
       textInput.value = '';
       document.getElementById('confidentialCheck').checked = false;
@@ -1146,7 +1149,7 @@
 
     function loadEntries() {
       try {
-        const stored = localStorage.getItem('sb_entries_v2');
+        const stored = localStorage.getItem('baselog_entries_v2');
         entries = stored ? JSON.parse(stored) : [];
       } catch (e) {
         entries = [];
@@ -1155,7 +1158,7 @@
     }
 
     function persistEntries() {
-      localStorage.setItem('sb_entries_v2', JSON.stringify(entries));
+      localStorage.setItem('baselog_entries_v2', JSON.stringify(entries));
       updateArchiveBadge();
     }
 
@@ -1195,8 +1198,8 @@
         list.innerHTML = `
           <div class="text-center py-12 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl bg-white/50 dark:bg-slate-900/50">
             <span class="text-3xl">📭</span>
-            <p class="text-sm font-semibold mt-2 text-slate-700 dark:text-slate-300">Keine Einträge gefunden</p>
-            <p class="text-xs text-slate-400 mt-1">Erfassen Sie Ihre täglichen Gedanken im Formular.</p>
+            <p class="text-sm font-semibold mt-2 text-slate-700 dark:text-slate-300">Keine BaseLog-Einträge gefunden</p>
+            <p class="text-xs text-slate-400 mt-1">Erfassen Sie Ihre täglichen Erkenntnisse im Formular.</p>
           </div>
         `;
         return;
@@ -1283,20 +1286,21 @@
       entries = entries.filter(x => x.id !== id);
       persistEntries();
       filterArchive();
-      showToast('Eintrag gelöscht.', '🗑️');
+      showToast('BaseLog Eintrag gelöscht.', '🗑️');
     }
 
     function exportAllAsJSON() {
       const bundle = {
+        app: 'BaseLog',
         exportDate: new Date().toISOString(),
-        version: '2.0',
+        version: '2.1',
         domains: domains,
         tagDatabase: tagDatabase,
         entries: entries
       };
       const jsonStr = JSON.stringify(bundle, null, 2);
-      downloadFile(`second-brain-backup-${new Date().toISOString().slice(0, 10)}.json`, jsonStr, 'application/json');
-      showToast('JSON-Komplettbackup heruntergeladen!', '📦');
+      downloadFile(`baselog-backup-${new Date().toISOString().slice(0, 10)}.json`, jsonStr, 'application/json');
+      showToast('BaseLog JSON-Komplettbackup heruntergeladen!', '📦');
     }
 
     function triggerImportJSON() {
@@ -1327,9 +1331,9 @@
           renderAvailableTags();
           renderArchiveList();
           populateArchiveFilters();
-          showToast('Backup erfolgreich importiert!', '✅');
+          showToast('BaseLog Backup erfolgreich importiert!', '✅');
         } catch (err) {
-          showToast('Ungültige JSON-Datei!', '⚠️');
+          showToast('Ungültige BaseLog JSON-Datei!', '⚠️');
         }
       };
       reader.readAsText(file);
@@ -1338,11 +1342,11 @@
 
     function exportAllAsTextBundle() {
       if (entries.length === 0) {
-        showToast('Keine Einträge vorhanden.', '⚠️');
+        showToast('Keine BaseLog-Einträge vorhanden.', '⚠️');
         return;
       }
       const bundle = entries.map(e => e.markdown).join('\n\n' + '='.repeat(40) + '\n\n');
-      downloadFile(`second-brain-all-${new Date().toISOString().slice(0, 10)}.md`, bundle);
+      downloadFile(`baselog-all-${new Date().toISOString().slice(0, 10)}.md`, bundle);
       showToast('Alle Einträge in 1 Sammel-Markdown exportiert!', '📚');
     }
 
@@ -1363,19 +1367,19 @@
         zip.folder(folderName).file(item.filename, item.markdown);
       });
 
-      zip.file('domains.json', JSON.stringify(domains, null, 2));
-      zip.file('taxonomy-tags.json', JSON.stringify(tagDatabase, null, 2));
+      zip.file('baselog_domains.json', JSON.stringify(domains, null, 2));
+      zip.file('baselog_tags.json', JSON.stringify(tagDatabase, null, 2));
 
       const blob = await zip.generateAsync({ type: 'blob' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `second-brain-vault-${new Date().toISOString().slice(0, 10)}.zip`;
+      a.download = `baselog-vault-${new Date().toISOString().slice(0, 10)}.zip`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showToast('ZIP-Archiv mit Unterordnern geladen!', '📦');
+      showToast('BaseLog ZIP-Archiv mit Unterordnern geladen!', '📦');
     }
   </script>
 </body>
