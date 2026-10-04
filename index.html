@@ -1,1386 +1,349 @@
 <!DOCTYPE html>
-<html lang="de" class="h-full">
+<html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>BaseLog – Digitales Wissens- & Erfahrungsarchiv</title>
-
-  <!-- PWA & Mobile Capabilities -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="BaseLog">
-  <meta name="application-name" content="BaseLog">
-  <meta name="format-detection" content="telephone=no">
-  <meta name="theme-color" content="#0284c7">
-
-  <!-- Tailwind CSS & JSZip CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-            mono: ['JetBrains Mono', 'Fira Code', 'Menlo', 'monospace']
-          },
-          colors: {
-            brand: {
-              50: '#f0f9ff',
-              100: '#e0f2fe',
-              500: '#0284c7',
-              600: '#0369a1',
-              700: '#075985',
-              900: '#0c4a6e',
-            }
-          }
-        }
-      }
-    }
-  </script>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Input Tracker</title>
   <style>
-    input, textarea, button, select {
-      -webkit-tap-highlight-color: transparent;
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --border: #cbd5e1;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --tag-bg: #e2e8f0;
+      --tag-active: #3b82f6;
     }
-    ::-webkit-scrollbar {
-      width: 5px;
-      height: 5px;
+
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 16px;
+      display: flex;
+      justify-content: center;
     }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(148, 163, 184, 0.35);
-      border-radius: 9999px;
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
-    ::-webkit-scrollbar-track {
-      background: transparent;
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    h1, h2 { margin-top: 0; }
+    h1 { font-size: 1.3rem; }
+    h2 { font-size: 1rem; color: #475569; margin-bottom: 8px; }
+
+    label { font-weight: 600; font-size: 0.9rem; display: block; margin-bottom: 6px; }
+    textarea, input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 12px;
+    }
+
+    .chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .chip {
+      padding: 6px 12px;
+      background: var(--tag-bg);
+      border: 1px solid transparent;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      user-select: none;
+    }
+    .chip.active {
+      background: var(--tag-active);
+      color: white;
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    button:hover { background: var(--primary-hover); }
+    button.secondary {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+    button.secondary:hover { background: #cbd5e1; }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .status-msg {
+      font-size: 0.85rem;
+      color: #15803d;
+      margin-top: 6px;
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-full flex flex-col font-sans transition-colors duration-200 antialiased pb-28 md:pb-16">
+<body>
 
-  <!-- Header Navigation -->
-  <header class="sticky top-0 z-30 backdrop-blur-md bg-white/85 dark:bg-slate-900/85 border-b border-slate-200 dark:border-slate-800 px-4 py-3">
-    <div class="max-w-4xl mx-auto flex items-center justify-between">
-      <div class="flex items-center space-x-2.5 cursor-pointer select-none" onclick="showSection('capture')">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-600 to-slate-900 flex items-center justify-center text-white font-mono font-bold text-sm tracking-tight shadow-sm border border-sky-400/30">
-          BL
-        </div>
-        <div>
-          <h1 class="text-sm font-bold leading-tight tracking-tight flex items-center gap-1.5">
-            BaseLog
-            <span class="text-[10px] font-mono font-normal px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300">v2.1</span>
-          </h1>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Digitales Wissens- & Erfahrungsarchiv</p>
-        </div>
-      </div>
+<div class="container">
 
-      <div class="flex items-center space-x-1 sm:space-x-2">
-        <button id="navCaptureBtn" onclick="showSection('capture')" class="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-sky-500 bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 transition">
-          ✍️ Erfassen
-        </button>
-        <button id="navArchiveBtn" onclick="showSection('archive')" class="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
-          📚 Archiv (<span id="entryCountBadge">0</span>)
-        </button>
-        <button id="navDomainBtn" onclick="showSection('domainManager')" title="Lebensbereiche anpassen" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
-          🧭
-        </button>
-        <button id="navTagsBtn" onclick="showSection('tagManager')" title="Tag-Katalog verwalten" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
-          🏷️
-        </button>
-        <button onclick="toggleDarkMode()" title="Hell/Dunkel wechseln" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
-          <span id="themeIcon">🌙</span>
-        </button>
-      </div>
-    </div>
-  </header>
+  <!-- Erfassungsmaske -->
+  <div class="card">
+    <h1>Neuer Eintrag</h1>
 
-  <!-- Main Content Container -->
-  <main class="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 space-y-6">
+    <label for="input-text">Notiz / Input:</label>
+    <textarea id="input-text" rows="3" placeholder="Was steht an oder was wurde beobachtet?"></textarea>
 
-    <!-- Sync Integration Status Card -->
-    <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-      <div class="flex items-center space-x-3">
-        <div id="syncIndicatorDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></div>
-        <div>
-          <span class="font-medium text-slate-800 dark:text-slate-200" id="syncStatusTitle">Lokaler BaseLog-Speicher aktiv</span>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400" id="syncStatusSub">Einträge sind offline im Browser gesichert.</p>
-        </div>
-      </div>
+    <label>Lebensbereich:</label>
+    <div id="area-chips" class="chip-group"></div>
 
-      <!-- Sync Buttons and Switchers -->
-      <div class="flex items-center flex-wrap gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
-        <!-- Native Desktop Proton Drive Folder Selector -->
-        <button type="button" id="dirPickerBtn" onclick="connectLocalDirectory()" class="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center space-x-1.5">
-          <span id="folderIcon">📁</span>
-          <span id="folderLabel">Proton Drive Ordner wählen</span>
-        </button>
+    <label>Tags (#):</label>
+    <div id="tag-chips" class="chip-group"></div>
 
-        <!-- Mobile Share Sheet Toggle -->
-        <label class="flex items-center space-x-1.5 cursor-pointer select-none bg-slate-100 dark:bg-slate-800/80 px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700" title="Auf Smartphones öffnet sich beim Speichern direkt der Proton Drive Upload-Dialog">
-          <input type="checkbox" id="mobileShareCheck" class="rounded border-slate-300 dark:border-slate-600 text-sky-600 focus:ring-sky-500">
-          <span class="text-[11px] font-medium text-slate-700 dark:text-slate-300">📲 Mobil teilen</span>
-        </label>
-      </div>
-    </div>
-
-    <!-- 1. CAPTURE FORM SECTION -->
-    <div id="captureSection" class="space-y-6">
-
-      <!-- Domain Selection -->
-      <div class="space-y-2">
-        <div class="flex items-center justify-between">
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            1. Lebensbereich auswählen
-          </label>
-          <div class="flex items-center space-x-2">
-            <span class="text-[11px] text-slate-400 truncate max-w-[200px]" id="currentDomainDesc">Berufserfahrung & Fachwissen</span>
-            <button type="button" onclick="showSection('domainManager')" class="text-xs text-sky-600 dark:text-sky-400 hover:underline">
-              + Bereich anlegen
-            </button>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5" id="domainSelector">
-          <!-- Populated dynamically via JS -->
-        </div>
-      </div>
-
-      <!-- Title Input -->
-      <div class="space-y-1.5">
-        <label for="insightTitle" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          2. Kernaussage / Thema (Titel)
-        </label>
-        <input type="text" id="insightTitle" placeholder="z. B. Entscheidungsmatrix unter Zeitdruck angewendet..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-sm" oninput="updatePreview()">
-      </div>
-
-      <!-- Main Text Area -->
-      <div class="space-y-1.5">
-        <div class="flex items-center justify-between">
-          <label for="insightText" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            3. Erkenntnis & Erfahrung
-          </label>
-          <div class="flex items-center space-x-1.5 text-xs text-sky-600 dark:text-sky-400">
-            <button type="button" onclick="insertPrompt('situation')" class="underline hover:opacity-80">Situation</button> ·
-            <button type="button" onclick="insertPrompt('takeaway')" class="underline hover:opacity-80">Erkenntnis</button> ·
-            <button type="button" onclick="insertPrompt('rule')" class="underline hover:opacity-80">Handlungsregel</button>
-          </div>
-        </div>
-        <textarea id="insightText" rows="6" placeholder="Was ist passiert? Welches Modell oder Prinzip lässt sich daraus für künftige Fragen ableiten?" class="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-sm transition-all" oninput="updatePreview()"></textarea>
-      </div>
-
-      <!-- Tag Taxonomy Management Card -->
-      <div class="space-y-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              4. Tags & Schlagworte (JSON-Katalog)
-            </label>
-            <p class="text-[11px] text-slate-400">Tippen Sie neue Tags ein oder wählen Sie hinterlegte Tags per Klick aus.</p>
-          </div>
-          <button type="button" onclick="showSection('tagManager')" class="text-xs text-sky-600 dark:text-sky-400 hover:underline">
-            Katalog bearbeiten 🏷️
-          </button>
-        </div>
-
-        <!-- Add Tag Input -->
-        <div class="flex items-center gap-2">
-          <div class="relative flex-1">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 text-xs">#</span>
-            <input type="text" id="customTagInput" placeholder="Neuer Tag (mit Komma oder Enter hinzufügen)..." class="w-full pl-7 pr-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-sky-500" onkeydown="handleTagKey(event)">
-          </div>
-          <button type="button" onclick="addCustomTagFromInput()" class="px-3.5 py-2 text-xs font-semibold rounded-xl bg-sky-600 hover:bg-sky-500 text-white transition active:scale-95 shadow-sm">
-            + Merken
-          </button>
-        </div>
-
-        <!-- Selected Tags Container -->
-        <div>
-          <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block mb-1.5">Ausgewählt für diese Notiz:</span>
-          <div class="flex flex-wrap items-center gap-1.5 min-h-[30px]" id="selectedTagsContainer">
-            <span class="text-xs text-slate-400 italic">Noch keine Tags gewählt.</span>
-          </div>
-        </div>
-
-        <!-- Available Tags in Active Domain -->
-        <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
-          <div class="flex items-center justify-between mb-1.5">
-            <span class="text-[11px] font-medium text-slate-400">Gespeicherte Tags für <span id="currentDomainTagLabel" class="capitalize font-semibold text-slate-600 dark:text-slate-300">beruf</span>:</span>
-            <button type="button" onclick="toggleShowAllTags()" id="toggleAllTagsBtn" class="text-[11px] text-slate-400 hover:text-sky-500">Alle Tags anzeigen</button>
-          </div>
-          <div class="flex flex-wrap items-center gap-1.5 max-h-36 overflow-y-auto pr-1" id="availableTagsContainer">
-            <!-- Dynamically populated from JSON catalog -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Privacy & AI Accessibility Switch -->
-      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
-        <div>
-          <span class="text-xs font-semibold block text-slate-800 dark:text-slate-200">🔒 Vertraulichkeit & KI-Filter</span>
-          <span class="text-[11px] text-slate-500 dark:text-slate-400">Setzt das Flag <code class="font-mono text-sky-600 dark:text-sky-400">ai_accessible: false</code> im YAML-Header</span>
-        </div>
-        <label class="flex items-center space-x-2 cursor-pointer select-none">
-          <input type="checkbox" id="confidentialCheck" class="rounded border-slate-300 dark:border-slate-700 text-amber-600 focus:ring-amber-500 w-4 h-4" onchange="updatePreview()">
-          <span class="text-xs font-medium text-slate-700 dark:text-slate-300">Privat halten</span>
-        </label>
-      </div>
-
-      <!-- Live Markdown / YAML Preview Drawer -->
-      <div class="border border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900 overflow-hidden shadow-sm">
-        <button type="button" onclick="toggleMarkdownPreview()" class="w-full px-4 py-3 text-xs font-semibold flex items-center justify-between text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/40">
-          <span class="flex items-center space-x-2">
-            <span>📄</span>
-            <span>Generiertes BaseLog Markdown & YAML-Schema (Vorschau)</span>
-          </span>
-          <span id="previewChevron" class="text-slate-400 transform transition-transform duration-200">▼</span>
-        </button>
-        <div id="previewWrapper" class="p-4 bg-slate-900 text-slate-100 border-t border-slate-800 font-mono text-xs overflow-x-auto">
-          <pre id="markdownPreviewCode" class="whitespace-pre-wrap break-words leading-relaxed"></pre>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- 2. DOMAIN MANAGER SECTION -->
-    <div id="domainManagerSection" class="hidden space-y-5">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
-        <div>
-          <h2 class="text-base font-semibold">BaseLog Lebensbereiche</h2>
-          <p class="text-xs text-slate-500">Definieren Sie eigene Kategorien für Ihre Erfahrungen (z. B. Weinbau, Finanzen, Führung)</p>
-        </div>
-        <button onclick="showSection('capture')" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-sky-600 text-white hover:bg-sky-500 transition">
-          Fertig
-        </button>
-      </div>
-
-      <!-- Add New Domain Card -->
-      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Neuen Lebensbereich anlegen</span>
-        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
-          <div class="sm:col-span-2">
-            <input type="text" id="newDomainEmoji" placeholder="Emoji (🍇)" maxlength="4" class="w-full text-center px-3 py-2 text-base rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-sky-500">
-          </div>
-          <div class="sm:col-span-4">
-            <input type="text" id="newDomainName" placeholder="Name (z.B. Weinbau & Reben)" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-sky-500">
-          </div>
-          <div class="sm:col-span-4">
-            <input type="text" id="newDomainDesc" placeholder="Kurzbeschreibung..." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-sky-500">
-          </div>
-          <div class="sm:col-span-2">
-            <button type="button" onclick="createDomain()" class="w-full h-full py-2 text-xs font-semibold rounded-xl bg-sky-600 hover:bg-sky-500 text-white transition active:scale-95 shadow-sm">
-              + Anlegen
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Domain List Cards -->
-      <div class="space-y-3" id="domainListContainer">
-        <!-- Rendered dynamically -->
-      </div>
-    </div>
-
-    <!-- 3. ARCHIVE VIEW SECTION -->
-    <div id="archiveSection" class="hidden space-y-4">
-      <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
-        <div>
-          <h2 class="text-base font-semibold">BaseLog Wissensarchiv</h2>
-          <p class="text-xs text-slate-500">Dauerhaft und anbieterunabhängig im Browser-JSON gesichert</p>
-        </div>
-        <div class="flex items-center flex-wrap gap-2">
-          <button onclick="exportAllAsJSON()" class="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
-            JSON Backup
-          </button>
-          <button onclick="triggerImportJSON()" class="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
-            JSON Import
-          </button>
-          <input type="file" id="jsonImportInput" accept=".json" class="hidden" onchange="handleJSONImport(event)">
-          <button onclick="exportAllAsZip()" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center space-x-1 shadow-sm">
-            <span>📦 ZIP (.md)</span>
-          </button>
-          <button onclick="exportAllAsTextBundle()" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-sky-600 hover:bg-sky-500 text-white transition shadow-sm">
-            Sammel-.md
-          </button>
-        </div>
-      </div>
-
-      <!-- Filter Controls -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-        <input type="text" id="archiveSearchInput" oninput="filterArchive()" placeholder="Volltextsuche in Titeln, Inhalt & Tags..." class="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500">
-        <select id="archiveFilterDomain" onchange="filterArchive()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500">
-          <option value="all">Alle Lebensbereiche</option>
-        </select>
-        <select id="archiveFilterTag" onchange="filterArchive()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500">
-          <option value="all">Alle Tags</option>
-        </select>
-      </div>
-
-      <!-- Entries Container -->
-      <div id="entriesList" class="space-y-3">
-        <!-- Rendered via JS -->
-      </div>
-    </div>
-
-    <!-- 4. TAG CATALOG MANAGER SECTION -->
-    <div id="tagManagerSection" class="hidden space-y-5">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
-        <div>
-          <h2 class="text-base font-semibold">BaseLog Tag-Katalog & Taxonomie</h2>
-          <p class="text-xs text-slate-500">Verwalten Sie Ihre Tags strukturiert nach Lebensbereichen</p>
-        </div>
-        <div class="flex items-center space-x-2">
-          <button onclick="resetTagsToDefault()" class="px-3 py-1.5 text-xs text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition">
-            Auf Standard zurücksetzen
-          </button>
-          <button onclick="showSection('capture')" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-sky-600 text-white hover:bg-sky-500 transition">
-            Fertig
-          </button>
-        </div>
-      </div>
-
-      <!-- Add Tag directly into catalog -->
-      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Neuen Tag im Katalog hinterlegen</span>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <input type="text" id="newCatalogTagName" placeholder="Tag Name (z.B. stakeholder-matrix)" class="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-sky-500">
-          <select id="newCatalogTagDomain" class="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-sky-500">
-          </select>
-          <button type="button" onclick="createCatalogTag()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-sky-600 hover:bg-sky-500 text-white transition active:scale-95">
-            + Im Katalog speichern
-          </button>
-        </div>
-      </div>
-
-      <!-- Tag List grouped by Domain -->
-      <div class="space-y-4" id="catalogDomainGroups">
-        <!-- Rendered dynamically -->
-      </div>
-    </div>
-
-  </main>
-
-  <!-- Sticky Bottom Actions -->
-  <footer class="fixed bottom-0 inset-x-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 p-3 z-40">
-    <div class="max-w-4xl mx-auto flex items-center justify-between gap-2">
-      <button type="button" onclick="copyToClipboard()" class="flex-1 py-2.5 px-3 text-xs font-medium rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition flex items-center justify-center space-x-1.5 active:scale-95 shadow-sm">
-        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-        <span class="hidden sm:inline">In Markdown</span><span>Kopieren</span>
-      </button>
-
-      <button type="button" onclick="downloadCurrentNote()" class="flex-1 py-2.5 px-3 text-xs font-medium rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition flex items-center justify-center space-x-1.5 active:scale-95 shadow-sm">
-        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-        <span>.md Datei</span>
-      </button>
-
-      <button type="button" onclick="saveToBaseLog()" class="flex-[1.5] py-2.5 px-4 text-xs font-semibold rounded-xl bg-gradient-to-r from-sky-600 to-slate-800 hover:from-sky-500 hover:to-slate-700 active:scale-95 text-white shadow-md shadow-sky-600/20 transition flex items-center justify-center space-x-1.5">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-        <span>In BaseLog sichern</span>
-      </button>
-    </div>
-  </footer>
-
-  <!-- Notification Toast Modal -->
-  <div id="notificationToast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transform -translate-y-20 opacity-0 pointer-events-none transition-all duration-300 bg-slate-900 text-white dark:bg-white dark:text-slate-950 px-4 py-2.5 rounded-2xl shadow-xl flex items-center space-x-2 text-xs font-medium">
-    <span id="toastIcon">✨</span>
-    <span id="toastMessage">Meldung</span>
+    <button id="save-entry-btn">Eintrag speichern</button>
+    <div id="entry-status" class="status-msg"></div>
   </div>
 
-  <!-- JavaScript Application Logic -->
-  <script>
-    // Standard Domains for BaseLog
-    const DEFAULT_DOMAINS = {
-      beruf: { id: 'beruf', name: 'Beruf & Fach', emoji: '💼', desc: 'Berufserfahrung, Methoden, Führung & Projekte', isSystem: true },
-      familie: { id: 'familie', name: 'Familie & Beziehung', emoji: '👨‍👩‍👦', desc: 'Werte, Erziehung, Partnerschaft & Momente', isSystem: true },
-      freizeit: { id: 'freizeit', name: 'Freizeit & Sport', emoji: '🏃', desc: 'Hobbys, Gesundheit, Natur & Fitness', isSystem: true },
-      mindset: { id: 'mindset', name: 'Mindset & Philosophie', emoji: '💡', desc: 'Reflexion, Lebensregeln & Denkmodelle', isSystem: true }
-    };
+  <!-- Konfiguration / Proton Drive Sync -->
+  <div class="card">
+    <h2>Konfiguration & Proton Drive</h2>
+    <p style="font-size: 0.85rem; color: #64748b; margin-top: 0;">
+      Verwalte Lebensbereiche und Tags. Speichere die Datei direkt in deinem lokalen Proton Drive-Ordner oder lade sie von dort.
+    </p>
 
-    // Default Seed Data for BaseLog Tag Database
-    const DEFAULT_TAG_DATABASE = {
-      beruf: ['architektur', 'projektmanagement', 'leadership', 'verhandlung', 'entscheidungsmatrix', 'kommunikation', 'effizienz', 'risikomanagement', 'prozessoptimierung', 'hermes', 'agile', 'priorisierung'],
-      familie: ['erziehung', 'beziehung', 'zeitmanagement', 'werte', 'kommunikation', 'rituale', 'gelassenheit', 'organisation', 'gespraechskultur'],
-      freizeit: ['reben', 'sport', 'natur', 'handwerk', 'reisen', 'gesundheit', 'regeneration', 'kreativitaet', 'ausdauer'],
-      mindset: ['fokus', 'mentale-modelle', 'perspektivenwechsel', 'stoizismus', 'gewohnheiten', 'selbstreflexion', 'klarheit', 'antifragilitaet'],
-      global: ['wichtige-erkenntnis', 'grundsatz', 'jahresziel']
-    };
+    <div class="btn-row">
+      <button id="btn-load-file" class="secondary">Aus Proton Drive laden (.json)</button>
+      <button id="btn-save-file">In Proton Drive sichern (.json)</button>
+    </div>
 
-    // Application State Variables
-    let domains = {};
-    let currentDomain = 'beruf';
-    let selectedTags = new Set(['architektur', 'entscheidungsmatrix']);
-    let tagDatabase = {};
-    let entries = [];
-    let isPreviewExpanded = true;
-    let showAllDomainTags = false;
-    let localDirectoryHandle = null; // Native Desktop File System Access API
+    <!-- Versteckter Standard-File-Picker als Rückfallebene -->
+    <input type="file" id="file-input" accept=".json" style="display: none;">
 
-    // Startup
-    window.addEventListener('DOMContentLoaded', () => {
-      loadSavedTheme();
-      initDomainDatabase();
-      initTagDatabase();
-      loadEntries();
-      initSyncSettings();
-      renderDomainSelectors();
-      renderAvailableTags();
-      renderSelectedTags();
-      updatePreview();
-      populateArchiveFilters();
+    <hr style="border: 0; border-top: 1px solid var(--border); margin: 16px 0;">
+
+    <label for="new-area">Neuen Lebensbereich ergänzen (reiner Text):</label>
+    <div style="display: flex; gap: 8px;">
+      <input type="text" id="new-area" placeholder="z.B. Familie, Beruf, Finanzen" style="margin-bottom: 0;">
+      <button id="btn-add-area" class="secondary">Hinzufügen</button>
+    </div>
+
+    <label for="new-tag" style="margin-top: 12px;">Neuen Tag ergänzen:</label>
+    <div style="display: flex; gap: 8px;">
+      <input type="text" id="new-tag" placeholder="z.B. idee, meeting, todo" style="margin-bottom: 0;">
+      <button id="btn-add-tag" class="secondary">Hinzufügen</button>
+    </div>
+
+    <div id="config-status" class="status-msg"></div>
+  </div>
+
+</div>
+
+<script>
+  // Standard-Konfiguration ohne Emojis
+  const DEFAULT_CONFIG = {
+    areas: ["Familie", "Business", "Gesundheit", "Finanzen", "Persoenliches"],
+    tags: ["idee", "todo", "meeting", "review", "dringend"]
+  };
+
+  let config = JSON.parse(localStorage.getItem("tracker_config")) || DEFAULT_CONFIG;
+  let fileHandle = null; // Für direkte Dateisystem-Schreibzugriffe
+
+  let selectedArea = null;
+  let selectedTags = new Set();
+
+  function saveConfigLocally() {
+    localStorage.setItem("tracker_config", JSON.stringify(config));
+    renderChips();
+  }
+
+  function renderChips() {
+    // Lebensbereiche rendern
+    const areaContainer = document.getElementById("area-chips");
+    areaContainer.innerHTML = "";
+    config.areas.forEach(area => {
+      const chip = document.createElement("div");
+      chip.className = `chip ${selectedArea === area ? 'active' : ''}`;
+      chip.textContent = area;
+      chip.onclick = () => {
+        selectedArea = (selectedArea === area) ? null : area;
+        renderChips();
+      };
+      areaContainer.appendChild(chip);
     });
 
-    function loadSavedTheme() {
-      const saved = localStorage.getItem('baselog_theme');
-      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (saved === 'dark' || (!saved && prefersDark)) {
-        document.documentElement.classList.add('dark');
-        document.getElementById('themeIcon').textContent = '☀️';
-      } else {
-        document.documentElement.classList.remove('dark');
-        document.getElementById('themeIcon').textContent = '🌙';
-      }
+    // Tags rendern
+    const tagContainer = document.getElementById("tag-chips");
+    tagContainer.innerHTML = "";
+    config.tags.forEach(tag => {
+      const chip = document.createElement("div");
+      const isSelected = selectedTags.has(tag);
+      chip.className = `chip ${isSelected ? 'active' : ''}`;
+      chip.textContent = "#" + tag;
+      chip.onclick = () => {
+        if (selectedTags.has(tag)) selectedTags.delete(tag);
+        else selectedTags.add(tag);
+        renderChips();
+      };
+      tagContainer.appendChild(chip);
+    });
+  }
+
+  // --- Neuer Lebensbereich / Tag hinzufügen ---
+  document.getElementById("btn-add-area").onclick = () => {
+    const val = document.getElementById("new-area").value.trim();
+    if (val && !config.areas.includes(val)) {
+      config.areas.push(val);
+      saveConfigLocally();
+      document.getElementById("new-area").value = "";
     }
+  };
 
-    function toggleDarkMode() {
-      const isDark = document.documentElement.classList.toggle('dark');
-      localStorage.setItem('baselog_theme', isDark ? 'dark' : 'light');
-      document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
+  document.getElementById("btn-add-tag").onclick = () => {
+    let val = document.getElementById("new-tag").value.trim().replace(/^#/, '');
+    if (val && !config.tags.includes(val)) {
+      config.tags.push(val);
+      saveConfigLocally();
+      document.getElementById("new-tag").value = "";
     }
+  };
 
-    function initSyncSettings() {
-      const hasFSA = 'showDirectoryPicker' in window;
-      const btn = document.getElementById('dirPickerBtn');
-      if (!hasFSA && btn) {
-        btn.title = "File System Access API auf diesem Browser/Gerät nicht verfügbar (z.B. iOS Safari). Nutzen Sie 'Mobil teilen'.";
-      }
+  // --- Konfiguration sichern (in Proton Drive Ordner) ---
+  document.getElementById("btn-save-file").onclick = async () => {
+    const jsonStr = JSON.stringify(config, null, 2);
 
-      const mobileShareSaved = localStorage.getItem('baselog_mobile_share') === 'true';
-      const chk = document.getElementById('mobileShareCheck');
-      if (chk) {
-        chk.checked = mobileShareSaved;
-        chk.addEventListener('change', () => {
-          localStorage.setItem('baselog_mobile_share', chk.checked);
-        });
-      }
-    }
-
-    async function connectLocalDirectory() {
-      if (!('showDirectoryPicker' in window)) {
-        showToast('Direkter Ordnerzugriff wird nur auf Desktop (Chrome/Edge/Brave) unterstützt.', 'ℹ️');
-        return;
-      }
-
+    // Moderne Browser: File System Access API
+    if (window.showSaveFilePicker) {
       try {
-        localDirectoryHandle = await window.showDirectoryPicker({
-          id: 'proton_drive_baselog',
-          mode: 'readwrite'
+        const handle = await window.showSaveFilePicker({
+          suggestedName: "tracker-config.json",
+          types: [{
+            description: "JSON Configuration",
+            accept: { "application/json": [".json"] }
+          }]
         });
-
-        const dirName = localDirectoryHandle.name || 'BaseLog';
-        document.getElementById('folderLabel').textContent = `Sync: ${dirName}`;
-        document.getElementById('folderIcon').textContent = '🟢';
-        document.getElementById('syncStatusTitle').textContent = `Proton Drive Sync aktiv: /${dirName}`;
-        document.getElementById('syncStatusSub').textContent = 'Neue Notizen werden automatisch physisch als .md abgelegt.';
-        showToast(`Ordner "${dirName}" erfolgreich mit BaseLog verbunden!`, '📁');
-      } catch (err) {
-        if (err.name !== 'AbortError') {
-          console.error(err);
-          showToast('Ordnerauswahl abgebrochen oder fehlgeschlagen.', '⚠️');
-        }
-      }
-    }
-
-    async function writeNoteToDesktopDirectory(payload) {
-      if (!localDirectoryHandle) return false;
-
-      try {
-        const options = { mode: 'readwrite' };
-        if ((await localDirectoryHandle.queryPermission(options)) !== 'granted') {
-          if ((await localDirectoryHandle.requestPermission(options)) !== 'granted') {
-            return false;
-          }
-        }
-
-        // Subdirectory based on life domain
-        const subDirHandle = await localDirectoryHandle.getDirectoryHandle(payload.domain, { create: true });
-        const fileHandle = await subDirHandle.getFileHandle(payload.filename, { create: true });
-        const writable = await fileHandle.createWritable();
-        await writable.write(payload.markdown);
+        const writable = await handle.createWritable();
+        await writable.write(jsonStr);
         await writable.close();
-        return true;
+        document.getElementById("config-status").textContent = "Gespeichert im ausgewählten Ordner!";
+        return;
       } catch (err) {
-        console.error('BaseLog File System Access error:', err);
-        return false;
+        if (err.name !== "AbortError") console.error(err);
       }
     }
 
-    function initDomainDatabase() {
+    // Fallback: Standard-Download
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "tracker-config.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    document.getElementById("config-status").textContent = "Datei heruntergeladen – in Proton Drive ablegen.";
+  };
+
+  // --- Konfiguration laden (aus Proton Drive Ordner) ---
+  document.getElementById("btn-load-file").onclick = async () => {
+    // Moderne Browser: File System Access API
+    if (window.showOpenFilePicker) {
       try {
-        const stored = localStorage.getItem('baselog_domains_v2');
-        if (stored) {
-          domains = JSON.parse(stored);
-        } else {
-          domains = JSON.parse(JSON.stringify(DEFAULT_DOMAINS));
-          persistDomains();
-        }
-      } catch (err) {
-        domains = JSON.parse(JSON.stringify(DEFAULT_DOMAINS));
-      }
-
-      if (!domains[currentDomain]) {
-        currentDomain = Object.keys(domains)[0] || 'beruf';
-      }
-    }
-
-    function persistDomains() {
-      localStorage.setItem('baselog_domains_v2', JSON.stringify(domains));
-      populateArchiveFilters();
-    }
-
-    function slugify(text) {
-      return text
-        .toLowerCase()
-        .trim()
-        .replace(/[äöüß]/g, (match) => ({ 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'ß': 'ss' }[match]))
-        .replace(/[^a-z0-9_-]/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-+|-+$/g, '') || 'eintrag';
-    }
-
-    function createDomain() {
-      const emojiInput = document.getElementById('newDomainEmoji');
-      const nameInput = document.getElementById('newDomainName');
-      const descInput = document.getElementById('newDomainDesc');
-
-      const emoji = emojiInput.value.trim() || '📁';
-      const name = nameInput.value.trim();
-      const desc = descInput.value.trim() || 'Eigene Notizen & Erfahrungen';
-
-      if (!name) {
-        showToast('Bitte einen Namen für den Lebensbereich eingeben.', '⚠️');
-        return;
-      }
-
-      const id = slugify(name);
-      if (domains[id]) {
-        showToast('Dieser Lebensbereich existiert bereits!', '⚠️');
-        return;
-      }
-
-      domains[id] = { id, name, emoji, desc, isSystem: false };
-
-      if (!tagDatabase[id]) {
-        tagDatabase[id] = [];
-        persistTagDatabase();
-      }
-
-      persistDomains();
-      emojiInput.value = '';
-      nameInput.value = '';
-      descInput.value = '';
-
-      renderDomainSelectors();
-      renderDomainListManager();
-      populateArchiveFilters();
-      showToast(`Bereich "${name}" in BaseLog angelegt!`, '🎉');
-    }
-
-    function deleteDomain(id) {
-      if (domains[id]?.isSystem) {
-        showToast('Standardbereiche können nicht gelöscht werden.', '🔒');
-        return;
-      }
-
-      delete domains[id];
-      if (currentDomain === id) {
-        currentDomain = 'beruf';
-      }
-
-      persistDomains();
-      renderDomainSelectors();
-      renderDomainListManager();
-      renderAvailableTags();
-      populateArchiveFilters();
-      showToast('Lebensbereich entfernt.', '🗑️️');
-    }
-
-    function renderDomainSelectors() {
-      const container = document.getElementById('domainSelector');
-      if (!container) return;
-
-      container.innerHTML = Object.values(domains).map(dom => {
-        const isActive = dom.id === currentDomain;
-        const activeClasses = isActive 
-          ? 'bg-sky-50 dark:bg-sky-950/40 border-sky-500 text-sky-800 dark:text-sky-300 ring-2 ring-sky-500/20' 
-          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700';
-
-        return `
-          <button type="button" onclick="selectDomain('${dom.id}')" class="p-3 rounded-xl border text-left flex flex-col gap-1 transition shadow-sm ${activeClasses}">
-            <span class="text-xl">${dom.emoji}</span>
-            <span class="text-xs font-semibold truncate">${dom.name}</span>
-            <span class="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-1 leading-tight">${dom.desc || ''}</span>
-          </button>
-        `;
-      }).join('');
-
-      const currentObj = domains[currentDomain];
-      if (currentObj) {
-        document.getElementById('currentDomainDesc').textContent = currentObj.desc || currentObj.name;
-      }
-    }
-
-    function renderDomainListManager() {
-      const container = document.getElementById('domainListContainer');
-      if (!container) return;
-
-      container.innerHTML = Object.values(domains).map(dom => `
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
-          <div class="flex items-center space-x-3 min-w-0">
-            <span class="text-2xl">${dom.emoji}</span>
-            <div class="min-w-0">
-              <div class="flex items-center space-x-2">
-                <h3 class="text-xs font-semibold truncate">${dom.name}</h3>
-                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">${dom.id}</span>
-                ${dom.isSystem ? '<span class="text-[10px] text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 px-1.5 py-0.5 rounded font-medium">Standard</span>' : ''}
-              </div>
-              <p class="text-[11px] text-slate-500 truncate mt-0.5">${dom.desc}</p>
-            </div>
-          </div>
-          <div class="flex items-center space-x-2 shrink-0">
-            ${!dom.isSystem ? `
-              <button onclick="deleteDomain('${dom.id}')" class="p-1.5 rounded-lg border border-rose-200 dark:border-rose-900 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition text-xs">
-                Löschen
-              </button>
-            ` : '<span class="text-xs text-slate-400 px-2 italic">Geschützt</span>'}
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function selectDomain(domainId) {
-      if (!domains[domainId]) return;
-      currentDomain = domainId;
-      renderDomainSelectors();
-      renderAvailableTags();
-      updatePreview();
-    }
-
-    function initTagDatabase() {
-      try {
-        const stored = localStorage.getItem('baselog_tag_database_v2');
-        if (stored) {
-          tagDatabase = JSON.parse(stored);
-        } else {
-          tagDatabase = JSON.parse(JSON.stringify(DEFAULT_TAG_DATABASE));
-          persistTagDatabase();
-        }
-      } catch (err) {
-        tagDatabase = JSON.parse(JSON.stringify(DEFAULT_TAG_DATABASE));
-      }
-
-      Object.keys(domains).forEach(d => {
-        if (!tagDatabase[d]) tagDatabase[d] = [];
-      });
-      if (!tagDatabase.global) tagDatabase.global = [];
-    }
-
-    function persistTagDatabase() {
-      localStorage.setItem('baselog_tag_database_v2', JSON.stringify(tagDatabase));
-      populateArchiveFilters();
-    }
-
-    function resetTagsToDefault() {
-      tagDatabase = JSON.parse(JSON.stringify(DEFAULT_TAG_DATABASE));
-      persistTagDatabase();
-      renderAvailableTags();
-      renderCatalogGroups();
-      showToast('Tags auf Standardwerte zurückgesetzt.', '🔄');
-    }
-
-    function sanitizeTag(raw) {
-      return raw
-        .toLowerCase()
-        .trim()
-        .replace(/^#+/, '')
-        .replace(/[äöüß]/g, (match) => ({ 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'ß': 'ss' }[match]))
-        .replace(/[^a-z0-9_-]/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-+|-+$/g, '');
-    }
-
-    function ensureTagInCatalog(tag, domain = currentDomain) {
-      const cleanTag = sanitizeTag(tag);
-      if (!cleanTag) return cleanTag;
-
-      if (!tagDatabase[domain]) tagDatabase[domain] = [];
-      const inDomain = tagDatabase[domain].includes(cleanTag);
-      const inGlobal = tagDatabase.global && tagDatabase.global.includes(cleanTag);
-
-      if (!inDomain && !inGlobal) {
-        tagDatabase[domain].unshift(cleanTag);
-        persistTagDatabase();
-      }
-
-      return cleanTag;
-    }
-
-    function addCustomTagFromInput() {
-      const input = document.getElementById('customTagInput');
-      const val = input.value;
-      if (!val.trim()) return;
-
-      const items = val.split(/[,;\s]+/).map(s => s.trim()).filter(Boolean);
-      items.forEach(item => {
-        const clean = ensureTagInCatalog(item, currentDomain);
-        if (clean) selectedTags.add(clean);
-      });
-
-      input.value = '';
-      renderAvailableTags();
-      renderSelectedTags();
-      updatePreview();
-      showToast('Tag hinzugefügt & im BaseLog Katalog gespeichert', '🏷️');
-    }
-
-    function handleTagKey(event) {
-      if (event.key === 'Enter' || event.key === ',') {
-        event.preventDefault();
-        addCustomTagFromInput();
-      }
-    }
-
-    function toggleTagSelection(tag) {
-      if (selectedTags.has(tag)) {
-        selectedTags.delete(tag);
-      } else {
-        selectedTags.add(tag);
-      }
-      renderSelectedTags();
-      renderAvailableTags();
-      updatePreview();
-    }
-
-    function removeSelectedTag(tag) {
-      selectedTags.delete(tag);
-      renderSelectedTags();
-      renderAvailableTags();
-      updatePreview();
-    }
-
-    function toggleShowAllTags() {
-      showAllDomainTags = !showAllDomainTags;
-      document.getElementById('toggleAllTagsBtn').textContent = showAllDomainTags 
-        ? 'Nur aktuellen Bereich anzeigen' 
-        : 'Alle Tags anzeigen';
-      renderAvailableTags();
-    }
-
-    function renderAvailableTags() {
-      const container = document.getElementById('availableTagsContainer');
-      const domInfo = domains[currentDomain] || { name: currentDomain };
-      document.getElementById('currentDomainTagLabel').textContent = domInfo.name;
-
-      let tagsToShow = [];
-      if (showAllDomainTags) {
-        const allSet = new Set();
-        Object.values(tagDatabase).forEach(list => {
-          if (Array.isArray(list)) list.forEach(t => allSet.add(t));
+        const [handle] = await window.showOpenFilePicker({
+          types: [{
+            description: "JSON Configuration",
+            accept: { "application/json": [".json"] }
+          }]
         });
-        tagsToShow = Array.from(allSet);
-      } else {
-        const domainTags = tagDatabase[currentDomain] || [];
-        const globalTags = tagDatabase.global || [];
-        tagsToShow = Array.from(new Set([...domainTags, ...globalTags]));
-      }
-
-      if (tagsToShow.length === 0) {
-        container.innerHTML = `<span class="text-xs text-slate-400 italic">Noch keine Tags für diesen Bereich vorhanden. Fügen Sie oben neue hinzu.</span>`;
+        const file = await handle.getFile();
+        const text = await file.text();
+        applyLoadedConfig(text);
         return;
-      }
-
-      container.innerHTML = tagsToShow.map(tag => {
-        const isSelected = selectedTags.has(tag);
-        return `
-          <button type="button" onclick="toggleTagSelection('${tag}')" class="px-2.5 py-1 text-xs rounded-lg border transition ${
-            isSelected 
-              ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-950 dark:border-white font-medium shadow-sm' 
-              : 'bg-slate-100 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700/80 text-slate-600 dark:text-slate-300 hover:border-sky-500'
-          }">
-            #${tag} ${isSelected ? '✓' : '+'}
-          </button>
-        `;
-      }).join('');
-    }
-
-    function renderSelectedTags() {
-      const container = document.getElementById('selectedTagsContainer');
-      if (selectedTags.size === 0) {
-        container.innerHTML = `<span class="text-xs text-slate-400 italic">Noch keine Tags für diesen Eintrag ausgewählt.</span>`;
-        return;
-      }
-
-      container.innerHTML = Array.from(selectedTags).map(tag => `
-        <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300 border border-sky-300 dark:border-sky-800 font-medium">
-          <span>#${tag}</span>
-          <button type="button" onclick="removeSelectedTag('${tag}')" class="text-sky-600 hover:text-sky-950 dark:text-sky-400 dark:hover:text-white ml-1 font-bold">×</button>
-        </span>
-      `).join('');
-    }
-
-    function createCatalogTag() {
-      const input = document.getElementById('newCatalogTagName');
-      const domainSelect = document.getElementById('newCatalogTagDomain');
-      const raw = input.value.trim();
-      const targetDomain = domainSelect.value;
-
-      if (!raw) {
-        showToast('Bitte einen Tag-Namen eingeben', '⚠️');
-        return;
-      }
-
-      const clean = sanitizeTag(raw);
-      if (!tagDatabase[targetDomain]) tagDatabase[targetDomain] = [];
-      if (!tagDatabase[targetDomain].includes(clean)) {
-        tagDatabase[targetDomain].unshift(clean);
-        persistTagDatabase();
-        input.value = '';
-        renderCatalogGroups();
-        renderAvailableTags();
-        showToast(`Tag #${clean} in BaseLog hinterlegt!`, '✅');
-      } else {
-        showToast(`Tag #${clean} existiert bereits in diesem Bereich.`, 'ℹ️');
-      }
-    }
-
-    function deleteCatalogTag(domain, tag) {
-      if (tagDatabase[domain]) {
-        tagDatabase[domain] = tagDatabase[domain].filter(t => t !== tag);
-        persistTagDatabase();
-        renderCatalogGroups();
-        renderAvailableTags();
-        showToast(`Tag #${tag} entfernt.`, '🗑️');
-      }
-    }
-
-    function renderCatalogGroups() {
-      const container = document.getElementById('catalogDomainGroups');
-      const select = document.getElementById('newCatalogTagDomain');
-      const allDomainKeys = [...Object.keys(domains), 'global'];
-
-      if (select) {
-        select.innerHTML = allDomainKeys.map(k => {
-          const dom = domains[k] || { name: 'Global (alle Bereiche)', emoji: '🌐' };
-          return `<option value="${k}">${dom.emoji} ${dom.name}</option>`;
-        }).join('');
-      }
-
-      container.innerHTML = allDomainKeys.map(domKey => {
-        const info = domains[domKey] || { name: 'Globale Tags', emoji: '🌐' };
-        const tags = tagDatabase[domKey] || [];
-
-        return `
-          <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center space-x-1.5">
-                <span>${info.emoji}</span>
-                <span>${info.name}</span>
-                <span class="text-slate-400 font-normal">(${tags.length})</span>
-              </span>
-            </div>
-            <div class="flex flex-wrap gap-1.5">
-              ${tags.length === 0 ? '<span class="text-xs text-slate-400 italic">Keine Tags hinterlegt.</span>' : ''}
-              ${tags.map(t => `
-                <span class="inline-flex items-center space-x-1 text-xs bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
-                  <span>#${t}</span>
-                  <button type="button" onclick="deleteCatalogTag('${domKey}', '${t}')" class="text-slate-400 hover:text-rose-500 font-bold ml-1 text-xs">×</button>
-                </span>
-              `).join('')}
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function showSection(section) {
-      const captureSection = document.getElementById('captureSection');
-      const archiveSection = document.getElementById('archiveSection');
-      const domainManagerSection = document.getElementById('domainManagerSection');
-      const tagManagerSection = document.getElementById('tagManagerSection');
-
-      const navCaptureBtn = document.getElementById('navCaptureBtn');
-      const navArchiveBtn = document.getElementById('navArchiveBtn');
-      const navDomainBtn = document.getElementById('navDomainBtn');
-      const navTagsBtn = document.getElementById('navTagsBtn');
-
-      captureSection.classList.add('hidden');
-      archiveSection.classList.add('hidden');
-      domainManagerSection.classList.add('hidden');
-      tagManagerSection.classList.add('hidden');
-
-      [navCaptureBtn, navArchiveBtn].forEach(b => {
-        b.className = "px-2.5 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition";
-      });
-      [navDomainBtn, navTagsBtn].forEach(b => {
-        b.className = "p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition";
-      });
-
-      if (section === 'capture') {
-        captureSection.classList.remove('hidden');
-        navCaptureBtn.className = "px-2.5 py-1.5 text-xs font-medium rounded-lg border border-sky-500 bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 transition";
-      } else if (section === 'archive') {
-        archiveSection.classList.remove('hidden');
-        navArchiveBtn.className = "px-2.5 py-1.5 text-xs font-medium rounded-lg border border-sky-500 bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 transition";
-        renderArchiveList();
-      } else if (section === 'domainManager') {
-        domainManagerSection.classList.remove('hidden');
-        navDomainBtn.className = "p-1.5 rounded-lg border border-sky-500 bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 transition";
-        renderDomainListManager();
-      } else if (section === 'tagManager') {
-        tagManagerSection.classList.remove('hidden');
-        navTagsBtn.className = "p-1.5 rounded-lg border border-sky-500 bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 transition";
-        renderCatalogGroups();
-      }
-    }
-
-    function insertPrompt(type) {
-      const textarea = document.getElementById('insightText');
-      let template = '';
-      if (type === 'situation') {
-        template = '\n### Situation & Kontext:\n';
-      } else if (type === 'takeaway') {
-        template = '\n### Kernaussage & Lerneffekt:\n';
-      } else if (type === 'rule') {
-        template = '\n### Handlungsmaxime / Mentales Modell:\n';
-      }
-
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const current = textarea.value;
-      textarea.value = current.substring(0, start) + template + current.substring(end);
-      textarea.focus();
-      textarea.selectionStart = textarea.selectionEnd = start + template.length;
-      updatePreview();
-    }
-
-    function generatePayload() {
-      const now = new Date();
-      const pad = (n) => String(n).padStart(2, '0');
-      const isoDate = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-      const isoTime = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-      const id = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
-
-      const titleInput = document.getElementById('insightTitle').value.trim();
-      const content = document.getElementById('insightText').value.trim();
-      const isConfidential = document.getElementById('confidentialCheck').checked;
-      
-      const domainObj = domains[currentDomain] || { name: currentDomain, emoji: '📝' };
-      const title = titleInput || `Erkenntnis ${isoDate} [${domainObj.name}]`;
-      const tagsArray = Array.from(selectedTags);
-
-      const yamlHeader = [
-        '---',
-        `system: "BaseLog"`,
-        `id: "${id}"`,
-        `title: "${title.replace(/"/g, '\\"')}"`,
-        `date: "${isoDate}"`,
-        `time: "${isoTime}"`,
-        `domain: "${currentDomain}"`,
-        `domain_name: "${domainObj.name.replace(/"/g, '\\"')}"`,
-        `type: "daily-insight"`,
-        `tags: [${tagsArray.map(t => `"${t}"`).join(', ')}]`,
-        `ai_accessible: ${!isConfidential}`,
-        'version: "2.1"',
-        '---'
-      ].join('\n');
-
-      const markdownContent = [
-        yamlHeader,
-        '',
-        `# ${title}`,
-        '',
-        `*BaseLog Eintrag vom ${isoDate} um ${isoTime} Uhr • Lebensbereich: **${domainObj.emoji} ${domainObj.name}***`,
-        '',
-        content || '_Noch kein Freitext hinterlegt._'
-      ].join('\n');
-
-      const filename = `${isoDate}-${currentDomain}-${slugify(title)}.md`;
-
-      return {
-        id,
-        title,
-        date: isoDate,
-        time: isoTime,
-        domain: currentDomain,
-        domainName: domainObj.name,
-        domainEmoji: domainObj.emoji,
-        tags: tagsArray,
-        isConfidential,
-        content,
-        markdown: markdownContent,
-        filename
-      };
-    }
-
-    function updatePreview() {
-      const payload = generatePayload();
-      const codeBlock = document.getElementById('markdownPreviewCode');
-      if (codeBlock) {
-        codeBlock.textContent = payload.markdown;
-      }
-    }
-
-    function toggleMarkdownPreview() {
-      const wrapper = document.getElementById('previewWrapper');
-      const chevron = document.getElementById('previewChevron');
-      isPreviewExpanded = !isPreviewExpanded;
-      if (isPreviewExpanded) {
-        wrapper.classList.remove('hidden');
-        chevron.style.transform = 'rotate(0deg)';
-      } else {
-        wrapper.classList.add('hidden');
-        chevron.style.transform = 'rotate(-90deg)';
-      }
-    }
-
-    function showToast(msg, icon = '✨') {
-      const toast = document.getElementById('notificationToast');
-      const msgSpan = document.getElementById('toastMessage');
-      const iconSpan = document.getElementById('toastIcon');
-      
-      msgSpan.textContent = msg;
-      iconSpan.textContent = icon;
-      toast.classList.remove('opacity-0', '-translate-y-20', 'pointer-events-none');
-      toast.classList.add('opacity-100', 'translate-y-0');
-
-      setTimeout(() => {
-        toast.classList.add('opacity-0', '-translate-y-20', 'pointer-events-none');
-        toast.classList.remove('opacity-100', 'translate-y-0');
-      }, 2500);
-    }
-
-    function copyToClipboard() {
-      const payload = generatePayload();
-      const dummy = document.createElement('textarea');
-      dummy.value = payload.markdown;
-      document.body.appendChild(dummy);
-      dummy.select();
-      try {
-        document.execCommand('copy');
-        showToast('BaseLog Markdown in die Zwischenablage kopiert!', '📋');
       } catch (err) {
-        showToast('Kopieren fehlgeschlagen.', '⚠️');
-      }
-      document.body.removeChild(dummy);
-    }
-
-    function downloadFile(filename, content, type = 'text/markdown;charset=utf-8') {
-      const blob = new Blob([content], { type });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-
-    function downloadCurrentNote() {
-      const payload = generatePayload();
-      downloadFile(payload.filename, payload.markdown);
-      showToast(`${payload.filename} gespeichert!`, '💾');
-    }
-
-    async function saveToBaseLog() {
-      const titleInput = document.getElementById('insightTitle');
-      const textInput = document.getElementById('insightText');
-
-      if (!textInput.value.trim() && !titleInput.value.trim()) {
-        showToast('Bitte Titel oder Notiztext erfassen.', '⚠️');
-        return;
-      }
-
-      selectedTags.forEach(t => ensureTagInCatalog(t, currentDomain));
-      const payload = generatePayload();
-
-      // 1. Save in Browser LocalStorage
-      entries.unshift(payload);
-      persistEntries();
-
-      let syncStatusMsg = 'In BaseLog gesichert!';
-
-      // 2. Desktop File System Access API (Proton Drive Folder Sync)
-      if (localDirectoryHandle) {
-        const wroteDesktop = await writeNoteToDesktopDirectory(payload);
-        if (wroteDesktop) {
-          syncStatusMsg += ' In Proton Drive Ordner abgelegt 📁';
-        }
-      }
-
-      // 3. Mobile Web Share API (Pass directly to Proton Drive)
-      const mobileShareActive = document.getElementById('mobileShareCheck')?.checked;
-      if (mobileShareActive && navigator.share) {
-        try {
-          const file = new File([payload.markdown], payload.filename, { type: 'text/markdown' });
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              files: [file],
-              title: payload.title,
-              text: `BaseLog Eintrag [${payload.domainName}]`
-            });
-            syncStatusMsg += ' Mobil geteilt 📲';
-          }
-        } catch (shareErr) {
-          if (shareErr.name !== 'AbortError') {
-            console.warn('Web Share abgebrochen oder nicht unterstützt:', shareErr);
-          }
-        }
-      }
-
-      // Reset fields
-      titleInput.value = '';
-      textInput.value = '';
-      document.getElementById('confidentialCheck').checked = false;
-      updatePreview();
-
-      showToast(syncStatusMsg, '✅');
-    }
-
-    function loadEntries() {
-      try {
-        const stored = localStorage.getItem('baselog_entries_v2');
-        entries = stored ? JSON.parse(stored) : [];
-      } catch (e) {
-        entries = [];
-      }
-      updateArchiveBadge();
-    }
-
-    function persistEntries() {
-      localStorage.setItem('baselog_entries_v2', JSON.stringify(entries));
-      updateArchiveBadge();
-    }
-
-    function updateArchiveBadge() {
-      const badge = document.getElementById('entryCountBadge');
-      if (badge) badge.textContent = entries.length;
-    }
-
-    function populateArchiveFilters() {
-      const domainSelect = document.getElementById('archiveFilterDomain');
-      const tagSelect = document.getElementById('archiveFilterTag');
-      if (!domainSelect || !tagSelect) return;
-
-      const currentDomainVal = domainSelect.value;
-      const currentTagVal = tagSelect.value;
-
-      domainSelect.innerHTML = '<option value="all">Alle Lebensbereiche</option>' +
-        Object.values(domains).map(d => `<option value="${d.id}">${d.emoji} ${d.name}</option>`).join('');
-      domainSelect.value = currentDomainVal || 'all';
-
-      const allTags = new Set();
-      Object.values(tagDatabase).forEach(list => {
-        if (Array.isArray(list)) list.forEach(t => allTags.add(t));
-      });
-      entries.forEach(e => (e.tags || []).forEach(t => allTags.add(t)));
-
-      tagSelect.innerHTML = '<option value="all">Alle Tags</option>' + 
-        Array.from(allTags).sort().map(t => `<option value="${t}">#${t}</option>`).join('');
-      tagSelect.value = currentTagVal || 'all';
-    }
-
-    function renderArchiveList(itemsToRender = null) {
-      const list = document.getElementById('entriesList');
-      const targetItems = itemsToRender !== null ? itemsToRender : entries;
-
-      if (targetItems.length === 0) {
-        list.innerHTML = `
-          <div class="text-center py-12 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl bg-white/50 dark:bg-slate-900/50">
-            <span class="text-3xl">📭</span>
-            <p class="text-sm font-semibold mt-2 text-slate-700 dark:text-slate-300">Keine BaseLog-Einträge gefunden</p>
-            <p class="text-xs text-slate-400 mt-1">Erfassen Sie Ihre täglichen Erkenntnisse im Formular.</p>
-          </div>
-        `;
-        return;
-      }
-
-      list.innerHTML = targetItems.map(item => {
-        const dom = domains[item.domain] || { name: item.domain, emoji: '📝' };
-
-        return `
-          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition">
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center space-x-2 text-xs text-slate-400 mb-1">
-                  <span>${dom.emoji} <span class="capitalize font-semibold text-slate-700 dark:text-slate-300">${dom.name}</span></span>
-                  <span>•</span>
-                  <span>${item.date}</span>
-                  ${item.isConfidential ? '<span class="text-amber-500 font-semibold">🔒 Privat</span>' : '<span class="text-emerald-500 font-medium">🤖 AI Ready</span>'}
-                </div>
-                <h3 class="text-sm font-semibold truncate text-slate-900 dark:text-slate-100">${item.title}</h3>
-                <p class="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed">${item.content || '_Kein Text_'}</p>
-                
-                <div class="flex flex-wrap gap-1 mt-2.5">
-                  ${(item.tags || []).map(t => `<span class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300">#${t}</span>`).join('')}
-                </div>
-              </div>
-
-              <div class="flex flex-col gap-1.5 shrink-0">
-                <button onclick="downloadSingleArchived('${item.id}')" title="Als .md speichern" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                </button>
-                <button onclick="copySingleArchived('${item.id}')" title="Kopieren" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-                </button>
-                <button onclick="deleteArchivedItem('${item.id}')" title="Löschen" class="p-1.5 rounded-lg border border-rose-200 dark:border-rose-900 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-500 transition">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function filterArchive() {
-      const q = document.getElementById('archiveSearchInput').value.toLowerCase();
-      const domainFilter = document.getElementById('archiveFilterDomain').value;
-      const tagFilter = document.getElementById('archiveFilterTag').value;
-
-      const filtered = entries.filter(item => {
-        const matchesDomain = (domainFilter === 'all' || item.domain === domainFilter);
-        const matchesTag = (tagFilter === 'all' || (item.tags && item.tags.includes(tagFilter)));
-        const matchesQuery = !q || 
-          (item.title && item.title.toLowerCase().includes(q)) || 
-          (item.content && item.content.toLowerCase().includes(q)) || 
-          (item.tags && item.tags.some(t => t.toLowerCase().includes(q)));
-        return matchesDomain && matchesTag && matchesQuery;
-      });
-
-      renderArchiveList(filtered);
-    }
-
-    function downloadSingleArchived(id) {
-      const item = entries.find(x => x.id === id);
-      if (item) {
-        downloadFile(item.filename, item.markdown);
-        showToast('Notiz heruntergeladen!', '📥');
+        if (err.name !== "AbortError") console.error(err);
       }
     }
 
-    function copySingleArchived(id) {
-      const item = entries.find(x => x.id === id);
-      if (item) {
-        const dummy = document.createElement('textarea');
-        dummy.value = item.markdown;
-        document.body.appendChild(dummy);
-        dummy.select();
-        document.execCommand('copy');
-        document.body.removeChild(dummy);
-        showToast('Notiz kopiert!', '📋');
+    // Fallback: Dateidialog
+    document.getElementById("file-input").click();
+  };
+
+  document.getElementById("file-input").onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => applyLoadedConfig(evt.target.result);
+    reader.readAsText(file);
+  };
+
+  function applyLoadedConfig(jsonString) {
+    try {
+      const parsed = JSON.parse(jsonString);
+      if (parsed.areas && parsed.tags) {
+        config = parsed;
+        saveConfigLocally();
+        document.getElementById("config-status").textContent = "Konfiguration erfolgreich geladen!";
+      } else {
+        alert("Ungültiges Konfigurationsformat.");
       }
+    } catch (e) {
+      alert("Fehler beim Parsen der JSON-Datei.");
     }
+  }
 
-    function deleteArchivedItem(id) {
-      entries = entries.filter(x => x.id !== id);
-      persistEntries();
-      filterArchive();
-      showToast('BaseLog Eintrag gelöscht.', '🗑️');
-    }
+  // --- Eintrag speichern (Demo) ---
+  document.getElementById("save-entry-btn").onclick = () => {
+    const text = document.getElementById("input-text").value.trim();
+    if (!text) return;
 
-    function exportAllAsJSON() {
-      const bundle = {
-        app: 'BaseLog',
-        exportDate: new Date().toISOString(),
-        version: '2.1',
-        domains: domains,
-        tagDatabase: tagDatabase,
-        entries: entries
-      };
-      const jsonStr = JSON.stringify(bundle, null, 2);
-      downloadFile(`baselog-backup-${new Date().toISOString().slice(0, 10)}.json`, jsonStr, 'application/json');
-      showToast('BaseLog JSON-Komplettbackup heruntergeladen!', '📦');
-    }
+    const entry = {
+      timestamp: new Date().toISOString(),
+      text: text,
+      area: selectedArea,
+      tags: Array.from(selectedTags)
+    };
 
-    function triggerImportJSON() {
-      document.getElementById('jsonImportInput').click();
-    }
+    const entries = JSON.parse(localStorage.getItem("tracker_entries")) || [];
+    entries.push(entry);
+    localStorage.setItem("tracker_entries", JSON.stringify(entries));
 
-    function handleJSONImport(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+    // Reset
+    document.getElementById("input-text").value = "";
+    selectedArea = null;
+    selectedTags.clear();
+    renderChips();
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const imported = JSON.parse(e.target.result);
-          if (imported.domains && typeof imported.domains === 'object') {
-            domains = imported.domains;
-            persistDomains();
-          }
-          if (imported.entries && Array.isArray(imported.entries)) {
-            entries = imported.entries;
-            persistEntries();
-          }
-          if (imported.tagDatabase && typeof imported.tagDatabase === 'object') {
-            tagDatabase = imported.tagDatabase;
-            persistTagDatabase();
-          }
-          renderDomainSelectors();
-          renderAvailableTags();
-          renderArchiveList();
-          populateArchiveFilters();
-          showToast('BaseLog Backup erfolgreich importiert!', '✅');
-        } catch (err) {
-          showToast('Ungültige BaseLog JSON-Datei!', '⚠️');
-        }
-      };
-      reader.readAsText(file);
-      event.target.value = '';
-    }
+    const status = document.getElementById("entry-status");
+    status.textContent = "Eintrag erfolgreich erfasst!";
+    setTimeout(() => { status.textContent = ""; }, 3000);
+  };
 
-    function exportAllAsTextBundle() {
-      if (entries.length === 0) {
-        showToast('Keine BaseLog-Einträge vorhanden.', '⚠️');
-        return;
-      }
-      const bundle = entries.map(e => e.markdown).join('\n\n' + '='.repeat(40) + '\n\n');
-      downloadFile(`baselog-all-${new Date().toISOString().slice(0, 10)}.md`, bundle);
-      showToast('Alle Einträge in 1 Sammel-Markdown exportiert!', '📚');
-    }
+  // Initiales Rendern
+  renderChips();
+</script>
 
-    async function exportAllAsZip() {
-      if (entries.length === 0) {
-        showToast('Keine Einträge für ZIP-Export vorhanden.', '⚠️');
-        return;
-      }
-      if (typeof JSZip === 'undefined') {
-        showToast('ZIP-Bibliothek lädt noch...', '⏳');
-        return;
-      }
-
-      const zip = new JSZip();
-      
-      entries.forEach(item => {
-        const folderName = item.domain || 'allgemein';
-        zip.folder(folderName).file(item.filename, item.markdown);
-      });
-
-      zip.file('baselog_domains.json', JSON.stringify(domains, null, 2));
-      zip.file('baselog_tags.json', JSON.stringify(tagDatabase, null, 2));
-
-      const blob = await zip.generateAsync({ type: 'blob' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `baselog-vault-${new Date().toISOString().slice(0, 10)}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      showToast('BaseLog ZIP-Archiv mit Unterordnern geladen!', '📦');
-    }
-  </script>
 </body>
 </html>
